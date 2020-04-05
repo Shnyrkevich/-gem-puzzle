@@ -2,3 +2,75 @@
  * {
      margin: 0 auto;
  }
+
+ body {
+    width: 100vw;
+    height: 100vw;
+ }
+
+ .game-buttons {
+     display: flex;
+     margin-top: 1%;
+     width: 400px;
+     height: 3%;
+ }
+
+ .game-statistic {
+    display: flex;
+    margin-top: 5px;
+    width: 400px;
+    height: 2%;
+ }
+
+ .game-statistic__el {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 25%;
+    height: 100%;
+ }
+
+ .button {
+     width: 150px;
+     height: 100%;
+     background-color: lightgreen;
+     border: none;
+     border-radius: 5px;
+ }
+
+ .button:hover {
+   background-color:  lightblue;
+ }
+
+ .game-shield {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    width: 400px;
+    height: 400px;
+    background-color: lightblue;
+ }
+
+ .game-block {
+    margin: 2px;
+    display: absolute;
+    align-items: center;
+    justify-content: center;
+    font-size: 25px;
+    width: 23%;
+    height: 23%;
+    border-radius: 4%;
+    background-color: lightcoral;
+    border: 1px solid black; 
+ }
+
+ .last-block {
+    display: absolute;
+    margin: 2px;
+    width: 23%;
+    height: 23%;
+    background-color: inherit;
+    border: 1px solid lightblue;
+
+ }
