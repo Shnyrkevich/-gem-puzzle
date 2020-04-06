@@ -45,6 +45,7 @@
  }
 
  .game-shield {
+    padding-left: 0.5%;
     position: relative;
     display: flex;
     flex-wrap: wrap;
@@ -144,7 +145,8 @@
    background-color: #fff;
    border: none;
    border-radius: 5px;
-   height: 200px;
+   min-height: 100px;
+   max-height: 200px;
    width:  300px;
    text-align: center;
 }
@@ -152,6 +154,7 @@
 .off-button {
    width: 50%;
    height: 10%;
+   margin-bottom: 5px;
 }
 
 .title-table {

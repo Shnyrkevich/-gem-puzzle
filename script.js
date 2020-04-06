@@ -1,21 +1,34 @@
+//Добавляем ссылку на стили
 const head = document.getElementsByTagName('head')[0];
 const link = document.createElement('link');
 link.rel = 'stylesheet';
 link.href = 'style.css';
 head.appendChild(link);
 
-let s4 = 4, s3 = 3, s8 = 8;
-localStorage.setItem('winers', "");
+//Некоторые переменные: размер поля, значения таблици победителей и статус начала игры
+// статус нажатой кнопки pause
+const s4 = 4, s3 = 3, s8 = 8;
+let startGame = false;
+let timerStatus = false;
+let pauseStatus = false;
 
+if(!('winers' in localStorage)){
+    localStorage.setItem('winers', "");
+} else if(!('statusField' in localStorage)){
+    localStorage.setItem('statusField', "");
+}
+
+//Получаем доступ к body
 const body = document.getElementsByTagName('body')[0];
 
+//Создаем кнопки управления и статистику
 const gameButtons = document.createElement('div');
 gameButtons.className = 'game-buttons';
 const buttonMixAndStart = document.createElement('button');
 buttonMixAndStart.textContent = "Размешать и начать";
 buttonMixAndStart.className = 'button';
 const buttonPause = document.createElement('button');
-buttonPause.textContent = "Пауза";
+buttonPause.textContent = "Пауза/Продолжить";
 buttonPause.className = 'button';
 gameButtons.appendChild(buttonMixAndStart);
 gameButtons.appendChild(buttonPause);
@@ -23,6 +36,7 @@ gameButtons.appendChild(buttonPause);
 const gameStat = document.createElement('div');
 gameStat.className = "game-statistic";
 
+//Смотрим в локал если игра прервалась достаем значения количества ходов и время
 let step = Number(localStorage.step) || 0;
 let timer;
 if(Number(localStorage.length) != 0){
@@ -30,9 +44,8 @@ if(Number(localStorage.length) != 0){
 } else {
     timer = [0, 0];
 }
-let timerStatus = false;
-let pauseStatus = false;
 
+//Добавляем элементы статы, некрасиво, но работет
 const stepCounter = document.createElement('div');
 const stepCounterText = document.createElement('span');
 stepCounterText.textContent = 'Ходы: ';
@@ -54,16 +67,15 @@ gameStat.appendChild(time);
 body.appendChild(gameButtons);
 body.appendChild(gameStat);
 
+//Создаем игровое поле
 const gameShield = document.createElement('div');
 gameShield.className = 'game-shield';
 body.appendChild(gameShield);
 
-
-
-
+//Генерируем игровой блок
 function createBlock(numb, size){
     let block = document.createElement('div');
-    if(numb == 0){
+    if(numb == 0 && numb == ""){
         block.className = 'last-block';
     } else {
         block.textContent = numb;
@@ -74,6 +86,7 @@ function createBlock(numb, size){
     return block;
 }
 
+//Генерируем поле
 function createGameShield(size){
     let len = size*size;
     let mas = [];
@@ -81,10 +94,19 @@ function createGameShield(size){
         mas[j] = createBlock(i, size);
         gameShield.appendChild(mas[j]);
     }
-   
 }
 
-createGameShield(s4);
+//Создаем поле с блоками
+//При загрузке создаем 4X4
+if(localStorage.statusField == ""){
+    createGameShield(s4);
+} else {
+    let mas = JSON.parse(localStorage.statusField);
+    for(let j = 0; j <= mas.length-1; j++){
+        let el = createBlock(mas[j], Math.sqrt(mas.length));
+        gameShield.appendChild(el);
+    }
+}
 
 const sizesBlock = document.createElement('div');
 sizesBlock.className = 'sizes-block';
@@ -101,9 +123,25 @@ standartSize.name = s4;
 size3X3.name = s3;
 size8X8.name = s8;
 standartSize.className = 'sizes-block__element';
-standartSize.classList.add('active-size');
 size3X3.className = 'sizes-block__element';
 size8X8.className = 'sizes-block__element';
+
+//Проверяю какой размер поля и в соответствии с этим кидаю active на кнопку размера
+switch(localStorage.statusSize){
+    case "3":
+        size3X3.classList.add('active-size');
+    break;
+    case "4":
+        standartSize.classList.add('active-size');
+    break;
+    case "8":
+        size8X8.classList.add('active-size');
+    break;
+    default: 
+        standartSize.classList.add('active-size');
+    break;
+}
+
 sizesBlock.appendChild(standartSize);
 sizesBlock.appendChild(size3X3);
 sizesBlock.appendChild(size8X8);
@@ -133,7 +171,6 @@ resultsTableWindow.appendChild(resultsTable);
 resultsTableWindow.classList.add('hidden');
 
 body.appendChild(resultsTableWindow);
-
 
 body.appendChild(results);
 
@@ -197,7 +234,6 @@ function checkEndGame(){
         timer = [0,0];
         time.textContent = `${timer[0]}:${timer[1]}`;
     }
-
 }
 
 function findPosition(el, array) {
@@ -213,10 +249,15 @@ function blockSwap(eventBlock){
     let blocksArray = Array.from(gameShield.childNodes);
     let eventPosArray = findPosition(event.target, blocksArray);
     let lastPosArray = findPosition(lastBlock, blocksArray);
-    
+    let valueArray = [];
+
     blocksArray[lastPosArray] = eventBlock;
     blocksArray[eventPosArray] = lastBlock;
-   
+
+    blocksArray.forEach(el => valueArray.push(el.textContent))
+    localStorage.statusField = JSON.stringify(valueArray);
+    console.log(typeof(localStorage.statusField));
+
     return blocksArray;
 }
 
@@ -245,49 +286,54 @@ function trueSwap(eventBlock) {
 }
 
 buttonMixAndStart.addEventListener('click', () => {
-    if(timerStatus == false) {
-        timerStatus = true; 
-        shieldMix();
-        clock();
-    } else {
-        timerStatus = false; 
-        timer[0] = 0;
-        timer[1] = 0;
-        step = 0;
-        stepCounter.textContent = step;
-        time.textContent = `${timer[0]}:${timer[1]}`;
-        shieldMix();
+    startGame = true;
+    if(startGame){
+        if(timerStatus == false) {
+            timerStatus = true; 
+            shieldMix();
+            clock();
+        } else {
+            timerStatus = false; 
+            timer[0] = 0;
+            timer[1] = 0;
+            step = 0;
+            stepCounter.textContent = step;
+            time.textContent = `${timer[0]}:${timer[1]}`;
+            shieldMix();
+        }
     }
-
 });
 
 buttonPause.addEventListener('click', () => {
     if(pauseStatus == false){
         console.log(pauseStatus,timerStatus);
         pauseStatus = true;
+        startGame = false;
     } else {
         pauseStatus = false;
         timerStatus = true;
+        startGame = true;
         clock();
     }
 });
 
 gameShield.addEventListener('click', (event) => { 
-    if(trueSwap(event.target)){
-        gameShield.append(...blockSwap(event.target));
-        step++;
-        localStorage.setItem('step', step);
-        stepCounter.textContent = step;
+    if(trueSwap(event.target) && startGame){
+            gameShield.append(...blockSwap(event.target));
+            step++;
+            localStorage.setItem('step', step);
+            stepCounter.textContent = step;
+            checkEndGame(); 
     }
-    checkEndGame(); 
 });
 
 sizesBlock.addEventListener('click', (event) => {
     if(!event.target.classList.contains('sizes-block')){
+        startGame = false;
         timerStatus = false;
-        timer[0] = 0;
-        timer[1] = 0;
-        step = 0;
+        localStorage.minute = timer[0] = 0;
+        localStorage.second = timer[1] = 0;
+        localStorage.step = step = 0;
         stepCounter.textContent = step;
         time.textContent = `${timer[0]}:${timer[1]}`;
         document.querySelectorAll('.sizes-block__element').forEach((el) => {
@@ -298,6 +344,8 @@ sizesBlock.addEventListener('click', (event) => {
             gameShield.removeChild(gameShield.firstChild);
         }
         createGameShield(Number(event.target.name));
+        localStorage.setItem('statusSize', event.target.name);
+        localStorage.statusField = "";
     }
 });
 
@@ -308,12 +356,14 @@ results.addEventListener('click', () => {
         mas[i] = mas[i].split(',');
     }
     mas.pop();
-    for(let i = 0; i < mas.length; i++){
+    while (resultList.firstChild) {
+        resultList.removeChild(resultList.firstChild);
+    }
+    for(let i = 0; i < 10; i++){
         let li = document.createElement('li');
-        li.textContent = mas[i][0] +' ' + mas[i][1] +' ' + mas[i][2] + ':' +  mas[i][3];
+        li.textContent = mas[i][0] +'   ' + mas[i][1] +'   ' + mas[i][2] + ':' +  mas[i][3];
         resultList.appendChild(li);
     }
-
 });
 
 offButton.addEventListener('click', () => {
