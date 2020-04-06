@@ -4,6 +4,9 @@ link.rel = 'stylesheet';
 link.href = 'style.css';
 head.appendChild(link);
 
+let s4 = 4, s3 = 3, s8 = 8;
+localStorage.setItem('winers', "");
+
 const body = document.getElementsByTagName('body')[0];
 
 const gameButtons = document.createElement('div');
@@ -20,8 +23,13 @@ gameButtons.appendChild(buttonPause);
 const gameStat = document.createElement('div');
 gameStat.className = "game-statistic";
 
-let step = 0;
-let timer = [0, 0];
+let step = Number(localStorage.step) || 0;
+let timer;
+if(Number(localStorage.length) != 0){
+    timer = [Number(localStorage.minute), Number(localStorage.second)];
+} else {
+    timer = [0, 0];
+}
 let timerStatus = false;
 let pauseStatus = false;
 
@@ -48,10 +56,12 @@ body.appendChild(gameStat);
 
 const gameShield = document.createElement('div');
 gameShield.className = 'game-shield';
-
 body.appendChild(gameShield);
 
-function createBlock(numb){
+
+
+
+function createBlock(numb, size){
     let block = document.createElement('div');
     if(numb == 0){
         block.className = 'last-block';
@@ -59,14 +69,73 @@ function createBlock(numb){
         block.textContent = numb;
         block.className = 'game-block';
     }
-    gameShield.appendChild(block);
+    block.style.width = `${100/size-2}%`;
+    block.style.height = `${100/size-2}%`;
+    return block;
 }
 
-function createGameShield(){
-    for(let i = 15; i >= 0; i--){
-        createBlock(i);
+function createGameShield(size){
+    let len = size*size;
+    let mas = [];
+    for(let i = len-1, j = 0; i >= 0; i--, j++){
+        mas[j] = createBlock(i, size);
+        gameShield.appendChild(mas[j]);
     }
+   
 }
+
+createGameShield(s4);
+
+const sizesBlock = document.createElement('div');
+sizesBlock.className = 'sizes-block';
+const standartSize = document.createElement('input');
+const size3X3 = document.createElement('input');
+const size8X8 = document.createElement('input');
+standartSize.type = 'button';
+size3X3.type = 'button';
+size8X8.type = 'button';
+standartSize.value = '4X4';
+size3X3.value = '3X3';
+size8X8.value = '8X8';
+standartSize.name = s4;
+size3X3.name = s3;
+size8X8.name = s8;
+standartSize.className = 'sizes-block__element';
+standartSize.classList.add('active-size');
+size3X3.className = 'sizes-block__element';
+size8X8.className = 'sizes-block__element';
+sizesBlock.appendChild(standartSize);
+sizesBlock.appendChild(size3X3);
+sizesBlock.appendChild(size8X8);
+
+body.appendChild(sizesBlock);
+
+const results = document.createElement('button');
+results.className = 'results';
+results.textContent = 'Таблица результатов';
+
+const resultsTableWindow = document.createElement('div');
+const resultsTable = document.createElement('div');
+const titleTable = document.createElement('p');
+const resultList = document.createElement('ol');
+const offButton = document.createElement('button');
+resultsTableWindow.className = 'message-window';
+resultsTable.className = 'body-message';
+offButton.className = 'off-button';
+titleTable.className = 'title-table';
+offButton.textContent = "Закрыть";
+titleTable.textContent = "Таблица результатов";
+resultList.style.marginBottom = "20px";
+resultsTable.appendChild(titleTable);
+resultsTable.appendChild(resultList);
+resultsTable.appendChild(offButton);
+resultsTableWindow.appendChild(resultsTable);
+resultsTableWindow.classList.add('hidden');
+
+body.appendChild(resultsTableWindow);
+
+
+body.appendChild(results);
 
 function getRandomInt(){
     return Math.floor(Math.random() * Math.floor(16));
@@ -98,56 +167,38 @@ function clock(){
             timer[1] = 0;
         }
         time.textContent = `${timer[0]}:${timer[1]}`; 
+        localStorage.setItem('minute', timer[0]);
+        localStorage.setItem('second', timer[1]);
         t = setTimeout('clock()', 1000);
     }
 }
 
-function checkEndGame(/*numb of elements*/){
+function checkEndGame(){
     let blockArray = Array.from(gameShield.childNodes);
     let gameComplete = 0;
+    let len = blockArray.length;
 
-    for(let i = 15, k=0; i >= 1; i--, k++){
+    for(let i = len-1, k=0; i >= 1; i--, k++){
         if(i == Number(blockArray[k].textContent)){
             gameComplete++;
         }
     }
 
-    if(gameComplete == 15){
+    if(gameComplete == len-1){
         timerStatus = false;
-        alert(`Ура! Вы решили головоломку за ${timer[0]}:${timer[1]} и ${step} ходов!!!`)
-    }
-   
-}
-
-createGameShield();
-
-buttonMixAndStart.addEventListener('click', () => {
-    if(timerStatus == false) {
-        timerStatus = true; 
-        shieldMix();
-        clock();
-    } else {
-        timerStatus = false; 
-        timer[0] = 0;
-        timer[1] = 0;
-        step = 0;
-        stepCounter.textContent = step;
+        alert(`Ура! Вы решили головоломку за ${timer[0]}:${timer[1]} и ${step} ходов!!!`);
+        let verification  = confirm('Желаете ли внести результат в список победителей?');
+        if(verification){
+            let name = prompt('Введите Имя');
+            let stat = [name, step, timer];
+            localStorage.winers += stat + ' ';
+        }
+        stepCounter.textContent = step = 0;
+        timer = [0,0];
         time.textContent = `${timer[0]}:${timer[1]}`;
-        shieldMix();
     }
 
-});
-
-buttonPause.addEventListener('click', () => {
-    if(pauseStatus == false){
-        console.log(pauseStatus,timerStatus);
-        pauseStatus = true;
-    } else {
-        pauseStatus = false;
-        timerStatus = true;
-        clock();
-    }
-});
+}
 
 function findPosition(el, array) {
     for(let i = 0; i < array.length; i++){
@@ -193,13 +244,79 @@ function trueSwap(eventBlock) {
     }
 }
 
+buttonMixAndStart.addEventListener('click', () => {
+    if(timerStatus == false) {
+        timerStatus = true; 
+        shieldMix();
+        clock();
+    } else {
+        timerStatus = false; 
+        timer[0] = 0;
+        timer[1] = 0;
+        step = 0;
+        stepCounter.textContent = step;
+        time.textContent = `${timer[0]}:${timer[1]}`;
+        shieldMix();
+    }
+
+});
+
+buttonPause.addEventListener('click', () => {
+    if(pauseStatus == false){
+        console.log(pauseStatus,timerStatus);
+        pauseStatus = true;
+    } else {
+        pauseStatus = false;
+        timerStatus = true;
+        clock();
+    }
+});
+
 gameShield.addEventListener('click', (event) => { 
     if(trueSwap(event.target)){
         gameShield.append(...blockSwap(event.target));
         step++;
+        localStorage.setItem('step', step);
         stepCounter.textContent = step;
-        console.log(event.target.textContent)
     }
     checkEndGame(); 
+});
+
+sizesBlock.addEventListener('click', (event) => {
+    if(!event.target.classList.contains('sizes-block')){
+        timerStatus = false;
+        timer[0] = 0;
+        timer[1] = 0;
+        step = 0;
+        stepCounter.textContent = step;
+        time.textContent = `${timer[0]}:${timer[1]}`;
+        document.querySelectorAll('.sizes-block__element').forEach((el) => {
+            el.classList.remove('active-size');
+        });
+        event.target.classList.add('active-size');
+        while (gameShield.firstChild) {
+            gameShield.removeChild(gameShield.firstChild);
+        }
+        createGameShield(Number(event.target.name));
+    }
+});
+
+results.addEventListener('click', () => {
+    resultsTableWindow.classList.remove('hidden');
+    let mas = localStorage.winers.split(' ');
+    for(let i = 0; i < mas.length; i++){
+        mas[i] = mas[i].split(',');
+    }
+    mas.pop();
+    for(let i = 0; i < mas.length; i++){
+        let li = document.createElement('li');
+        li.textContent = mas[i][0] +' ' + mas[i][1] +' ' + mas[i][2] + ':' +  mas[i][3];
+        resultList.appendChild(li);
+    }
+
+});
+
+offButton.addEventListener('click', () => {
+    resultsTableWindow.classList.add('hidden');
 });
 
