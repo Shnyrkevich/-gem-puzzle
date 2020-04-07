@@ -1,3 +1,4 @@
+
 //Добавляем ссылку на стили
 const head = document.getElementsByTagName('head')[0];
 const link = document.createElement('link');
@@ -14,8 +15,6 @@ let pauseStatus = false;
 
 if(!('winers' in localStorage)){
     localStorage.setItem('winers', "");
-} else if(!('statusField' in localStorage)){
-    localStorage.setItem('statusField', "");
 }
 
 //Получаем доступ к body
@@ -98,17 +97,19 @@ function createGameShield(size){
 
 //Создаем поле с блоками
 //Если перезагрузили страницу при запущенной игре пересобираем поле
-if(localStorage.statusField == ""){
-    createGameShield(s4);
-} else {
+if('statusField' in localStorage){
     let mas = JSON.parse(localStorage.statusField);
     for(let j = 0; j <= mas.length-1; j++){
         let el = createBlock(mas[j], Math.sqrt(mas.length));
         gameShield.appendChild(el);
     }
     localStorage.setItem('statusSize', Math.sqrt(mas.length));
+} else {
+    createGameShield(s4);
+    let mas = [];
+    Array.from(gameShield.childNodes).forEach(el => mas.push(el.textContent))
+    localStorage.setItem('statusField', JSON.stringify(mas));
 }
-
 
 //Создаем кнопки управления размером игрового поля
 const sizesBlock = document.createElement('div');
@@ -362,7 +363,9 @@ sizesBlock.addEventListener('click', (event) => {
             gameShield.removeChild(gameShield.firstChild);
         }
         createGameShield(Number(event.target.name));
-        localStorage.statusField = "";
+        let mas = [];
+        Array.from(gameShield.childNodes).forEach(el => mas.push(el.textContent))
+        localStorage.statusField = mas;
     }
 });
 
