@@ -39,7 +39,7 @@ gameStat.className = "game-statistic";
 //Смотрим в локал если игра прервалась достаем значения количества ходов и время
 let step = Number(localStorage.step) || 0;
 let timer;
-if(Number(localStorage.length) != 0){
+if('minute' in localStorage && 'second' in localStorage){
     timer = [Number(localStorage.minute), Number(localStorage.second)];
 } else {
     timer = [0, 0];
