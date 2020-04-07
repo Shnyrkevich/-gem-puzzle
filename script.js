@@ -1,3 +1,5 @@
+localStorage.clear();
+
 //Добавляем ссылку на стили
 const head = document.getElementsByTagName('head')[0];
 const link = document.createElement('link');
@@ -100,7 +102,6 @@ function createGameShield(size){
 //Если перезагрузили страницу при запущенной игре пересобираем поле
 if(localStorage.statusField == ""){
     createGameShield(s4);
-    localStorage.setItem('statusSize', s4);
 } else {
     let mas = JSON.parse(localStorage.statusField);
     for(let j = 0; j <= mas.length-1; j++){
