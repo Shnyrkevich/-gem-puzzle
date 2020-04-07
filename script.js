@@ -97,17 +97,21 @@ function createGameShield(size){
 }
 
 //Создаем поле с блоками
-//При загрузке создаем 4X4
+//Если перезагрузили страницу при запущенной игре пересобираем поле
 if(localStorage.statusField == ""){
     createGameShield(s4);
+    localStorage.setItem('statusSize', s4);
 } else {
     let mas = JSON.parse(localStorage.statusField);
     for(let j = 0; j <= mas.length-1; j++){
         let el = createBlock(mas[j], Math.sqrt(mas.length));
         gameShield.appendChild(el);
     }
+    localStorage.setItem('statusSize', Math.sqrt(mas.length));
 }
 
+
+//Создаем кнопки управления размером игрового поля
 const sizesBlock = document.createElement('div');
 sizesBlock.className = 'sizes-block';
 const standartSize = document.createElement('input');
@@ -128,13 +132,13 @@ size8X8.className = 'sizes-block__element';
 
 //Проверяю какой размер поля и в соответствии с этим кидаю active на кнопку размера
 switch(localStorage.statusSize){
-    case "3":
+    case '3':
         size3X3.classList.add('active-size');
     break;
-    case "4":
+    case '4':
         standartSize.classList.add('active-size');
     break;
-    case "8":
+    case '8':
         size8X8.classList.add('active-size');
     break;
     default: 
@@ -148,6 +152,8 @@ sizesBlock.appendChild(size8X8);
 
 body.appendChild(sizesBlock);
 
+
+//Создание кнопки и окна, при нажатии на кнопку вызывает окно с результатом
 const results = document.createElement('button');
 results.className = 'results';
 results.textContent = 'Таблица результатов';
@@ -174,10 +180,12 @@ body.appendChild(resultsTableWindow);
 
 body.appendChild(results);
 
+//Функция рандома 
 function getRandomInt(){
-    return Math.floor(Math.random() * Math.floor(16));
+    return Math.floor(Math.random() * Math.floor(gameShield.childNodes.length));
 }
 
+//Перемешивание блоков
 function shieldMix(){
     step = 0;
     timer = [0, 0];
@@ -193,6 +201,7 @@ function shieldMix(){
     gameShield.appendChild(...blocksArray);
 }
 
+//Недотаймер
 function clock(){
     if(pauseStatus == true && timerStatus == true) {
         timerStatus = false;
@@ -210,6 +219,7 @@ function clock(){
     }
 }
 
+//Функция проверки конца игры
 function checkEndGame(){
     let blockArray = Array.from(gameShield.childNodes);
     let gameComplete = 0;
@@ -236,6 +246,7 @@ function checkEndGame(){
     }
 }
 
+//Поиск позиции блока в gameShield.childNodes
 function findPosition(el, array) {
     for(let i = 0; i < array.length; i++){
         if(array[i] == el){
@@ -244,6 +255,7 @@ function findPosition(el, array) {
     }
 }
 
+//Смена блоков местами
 function blockSwap(eventBlock){
     let lastBlock = gameShield.querySelector('.last-block');
     let blocksArray = Array.from(gameShield.childNodes);
@@ -256,11 +268,11 @@ function blockSwap(eventBlock){
 
     blocksArray.forEach(el => valueArray.push(el.textContent))
     localStorage.statusField = JSON.stringify(valueArray);
-    console.log(typeof(localStorage.statusField));
 
     return blocksArray;
 }
 
+//Проверка условия ортогональности 
 function trueSwap(eventBlock) {
     let lastBlock = gameShield.querySelector('.last-block');
     let lastElemPosLeft = lastBlock.getBoundingClientRect().left;
@@ -285,15 +297,16 @@ function trueSwap(eventBlock) {
     }
 }
 
+//Действие на нажатие кнопки Button Mix and Start
 buttonMixAndStart.addEventListener('click', () => {
     startGame = true;
+    buttonMixAndStart.classList.add('button-activity');
     if(startGame){
         if(timerStatus == false) {
             timerStatus = true; 
             shieldMix();
             clock();
-        } else {
-            timerStatus = false; 
+        } else {    
             timer[0] = 0;
             timer[1] = 0;
             step = 0;
@@ -304,19 +317,24 @@ buttonMixAndStart.addEventListener('click', () => {
     }
 });
 
+//Действие на кнопку пауза/ продолжить
 buttonPause.addEventListener('click', () => {
     if(pauseStatus == false){
-        console.log(pauseStatus,timerStatus);
         pauseStatus = true;
         startGame = false;
+        buttonPause.classList.add('button-activity');
+        buttonMixAndStart.classList.remove('button-activity');
     } else {
         pauseStatus = false;
         timerStatus = true;
         startGame = true;
         clock();
+        buttonPause.classList.remove('button-activity');
+        buttonMixAndStart.classList.add('button-activity');
     }
 });
 
+//Нажатие на игровое поле с проверкой условия размещения
 gameShield.addEventListener('click', (event) => { 
     if(trueSwap(event.target) && startGame){
             gameShield.append(...blockSwap(event.target));
@@ -327,6 +345,7 @@ gameShield.addEventListener('click', (event) => {
     }
 });
 
+//Смена размеров игрового поля
 sizesBlock.addEventListener('click', (event) => {
     if(!event.target.classList.contains('sizes-block')){
         startGame = false;
@@ -340,15 +359,15 @@ sizesBlock.addEventListener('click', (event) => {
             el.classList.remove('active-size');
         });
         event.target.classList.add('active-size');
-        while (gameShield.firstChild) {
+        while(gameShield.firstChild) {
             gameShield.removeChild(gameShield.firstChild);
         }
         createGameShield(Number(event.target.name));
-        localStorage.setItem('statusSize', event.target.name);
         localStorage.statusField = "";
     }
 });
 
+//нажатие на кнопку результаты
 results.addEventListener('click', () => {
     resultsTableWindow.classList.remove('hidden');
     let mas = localStorage.winers.split(' ');
@@ -366,6 +385,7 @@ results.addEventListener('click', () => {
     }
 });
 
+//Закрытие окна результаты
 offButton.addEventListener('click', () => {
     resultsTableWindow.classList.add('hidden');
 });

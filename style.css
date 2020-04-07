@@ -39,9 +39,15 @@
      outline: none;
  }
 
+ .button-activity {
+    color: lightgreen;
+    background-color: black;
+ }
+
  .button:hover {
    background-color:  lightblue;
    cursor: pointer;
+   color: black;
  }
 
  .game-shield {
@@ -71,7 +77,6 @@
     height: 23%;
     background-color: inherit;
     border: 1px solid lightblue;
-
  }
 
  .sizes-block {
