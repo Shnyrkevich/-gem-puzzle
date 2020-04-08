@@ -105,10 +105,7 @@ if('statusField' in localStorage){
     localStorage.setItem('statusSize', Math.sqrt(mas.length));
 } else {
     createGameShield(s4);
-    /*let mas = [];
-    Array.from(gameShield.childNodes).forEach(el => mas.push(el.textContent))
-    localStorage.setItem('statusField', JSON.stringify(mas));*/
-    statusFieldUpdate()
+    statusFieldUpdate();
 }
 
 //Создаем кнопки управления размером игрового поля
@@ -298,9 +295,14 @@ function trueSwap(eventBlock) {
     (Math.round(targetPosLeft+4) == Math.round(lastElemPosLeft - (lastElemPosRight-lastElemPosLeft))
      || Math.round(targetPosRight-4) == Math.round(lastElemPosRight + (lastElemPosRight-lastElemPosLeft)))){
         return true;
-    } else if(targetPosLeft == lastElemPosLeft && Math.round(targetPosTop+6) == Math.round(lastElemPosTop - (lastElemPosBot-lastElemPosTop))){
+    } else if(targetPosLeft == lastElemPosLeft && ((Math.round(targetPosTop) == Math.round(lastElemPosBot+6)) ||
+                                                    (Math.round(targetPosTop) == Math.round(lastElemPosBot+5)) ||
+                                                    (Math.round(targetPosTop) == Math.round(lastElemPosBot+4)))){
         return true;
-    } else if(targetPosLeft == lastElemPosLeft && Math.round(targetPosBot-6) == Math.round(lastElemPosBot + (lastElemPosBot-lastElemPosTop))) {
+
+    } else if(targetPosLeft == lastElemPosLeft && ((Math.round(targetPosBot) == Math.round(lastElemPosTop-6)) || //По факту эти magic numbers это margin двух блоков(4) плюс мэйджик flex-wrap
+                                                    (Math.round(targetPosBot) == Math.round(lastElemPosTop-5)) || 
+                                                    (Math.round(targetPosBot) == Math.round(lastElemPosTop-4)))) {
         return true;
     } else{
         return false;
