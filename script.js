@@ -1,4 +1,4 @@
-
+localStorage.clear();
 //Добавляем ссылку на стили
 const head = document.getElementsByTagName('head')[0];
 const link = document.createElement('link');
@@ -106,9 +106,10 @@ if('statusField' in localStorage){
     localStorage.setItem('statusSize', Math.sqrt(mas.length));
 } else {
     createGameShield(s4);
-    let mas = [];
+    /*let mas = [];
     Array.from(gameShield.childNodes).forEach(el => mas.push(el.textContent))
-    localStorage.setItem('statusField', JSON.stringify(mas));
+    localStorage.setItem('statusField', JSON.stringify(mas));*/
+    statusFieldUpdate()
 }
 
 //Создаем кнопки управления размером игрового поля
@@ -184,6 +185,16 @@ body.appendChild(results);
 function getRandomInt(){
     return Math.floor(Math.random() * Math.floor(gameShield.childNodes.length));
 }
+
+function statusFieldUpdate() {
+    let mas = [];
+    Array.from(gameShield.childNodes).forEach(el => mas.push(el.textContent))
+    if('statusField' in localStorage){
+        localStorage.statusField = JSON.stringify(mas);
+    } else {
+        localStorage.setItem('statusField', JSON.stringify(mas));
+    }
+} 
 
 //Перемешивание блоков
 function shieldMix(){
@@ -266,7 +277,7 @@ function blockSwap(eventBlock){
     blocksArray[lastPosArray] = eventBlock;
     blocksArray[eventPosArray] = lastBlock;
 
-    blocksArray.forEach(el => valueArray.push(el.textContent))
+    blocksArray.forEach(el => valueArray.push(el.textContent));
     localStorage.statusField = JSON.stringify(valueArray);
 
     return blocksArray;
@@ -363,9 +374,7 @@ sizesBlock.addEventListener('click', (event) => {
             gameShield.removeChild(gameShield.firstChild);
         }
         createGameShield(Number(event.target.name));
-        let mas = [];
-        Array.from(gameShield.childNodes).forEach(el => mas.push(el.textContent))
-        localStorage.statusField = mas;
+        statusFieldUpdate();
     }
 });
 
