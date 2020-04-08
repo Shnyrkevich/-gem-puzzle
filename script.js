@@ -1,4 +1,3 @@
-localStorage.clear();
 //Добавляем ссылку на стили
 const head = document.getElementsByTagName('head')[0];
 const link = document.createElement('link');
